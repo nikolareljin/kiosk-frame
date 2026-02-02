@@ -1,0 +1,12 @@
+#!/bin/sh
+set -euo pipefail
+
+MOUNT=$(/opt/appliance/venv/bin/python - <<'PY'
+import yaml
+cfg=yaml.safe_load(open('/etc/appliance/appliance.yaml'))
+print(cfg['paths']['dlna_mount'])
+PY
+)
+
+mkdir -p "$MOUNT"
+exec djmount -o allow_other "$MOUNT"

@@ -1,0 +1,35 @@
+/* Auto-generated from /etc/appliance/appliance.yaml */
+var config = {
+  address: "127.0.0.1",
+  port: 8081,
+  basePath: "/",
+  ipWhitelist: [],
+  language: "en",
+  timeFormat: 24,
+  units: "metric",
+  modules: [
+    {
+      module: "calendar",
+      position: "top_left",
+      config: {
+        calendars: []
+      }
+    },
+    {
+      module: "MMM-GoogleTasks",
+      position: "top_right",
+      config: {
+        lists: []
+      }
+    },
+    {
+      module: "MMM-MicrosoftToDo",
+      position: "top_right",
+      config: {
+        lists: []
+      }
+    }
+  ]
+};
+
+if (typeof module !== "undefined") { module.exports = config; }

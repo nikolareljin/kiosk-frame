@@ -1,0 +1,7 @@
+#!/bin/sh
+set -euo pipefail
+
+LOG=/var/log/appliance/webui.log
+mkdir -p /var/log/appliance
+
+exec /opt/appliance/venv/bin/python /opt/appliance/webui/app.py >>"$LOG" 2>&1

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>webui.log</h2>
+  <pre>{{ logs.webui }}</pre>
+</div>
+<div class="card">
+  <h2>photoframe.log</h2>
+  <pre>{{ logs.photoframe }}</pre>
+</div>
+<div class="card">
+  <h2>photoframe-watchdog.log</h2>
+  <pre>{{ logs.photoframe_watchdog }}</pre>
+</div>
+<div class="card">
+  <h2>calendar_fetch.log</h2>
+  <pre>{{ logs.calendar_fetch }}</pre>
+</div>
+{% endblock %}

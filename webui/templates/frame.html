@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Frame</h2>
+  <p>DLNA mount: {{ cfg.paths.dlna_mount }}</p>
+  <p>Server dir: {{ cfg.photoframe.server_dir }}</p>
+  <p>Subpath: {{ cfg.photoframe.subpath }}</p>
+  <p>Playlist refresh: {{ cfg.photoframe.playlist_refresh_seconds }}s</p>
+  <p>Image duration: {{ cfg.photoframe.image_display_duration }}s</p>
+</div>
+{% endblock %}

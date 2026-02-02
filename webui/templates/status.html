@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Service Status</h2>
+  <p>djmount: {{ 'running' if status.djmount else 'stopped' }}</p>
+  <p>mpv: {{ 'running' if status.mpv else 'stopped' }}</p>
+  <p>magicmirror: {{ 'running' if status.magicmirror else 'stopped' }}</p>
+  <p>calendar_fetch: {{ 'running' if status.calendar_fetch else 'stopped' }}</p>
+</div>
+<div class="card">
+  <h2>DLNA Servers</h2>
+  {% if server_dirs %}
+    <ul>
+      {% for d in server_dirs %}<li>{{ d }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <p>No DLNA server directories found.</p>
+  {% endif %}
+</div>
+{% endblock %}

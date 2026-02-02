@@ -1,0 +1,42 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          magicmirror
+# Required-Start:    $network
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: MagicMirror server
+### END INIT INFO
+
+set -e
+PID=/var/run/magicmirror.pid
+
+ENABLED=$(/opt/appliance/venv/bin/python - <<'PY'
+import yaml
+cfg=yaml.safe_load(open('/etc/appliance/appliance.yaml'))
+print('yes' if cfg['mirror'].get('enabled', True) else 'no')
+PY
+)
+
+case "$1" in
+  start)
+    if [ "$ENABLED" = "no" ]; then
+      exit 0
+    fi
+    start-stop-daemon --start --background --make-pidfile --pidfile "$PID" --exec /opt/appliance/mirror/mm_start.sh
+    ;;
+  stop)
+    start-stop-daemon --stop --pidfile "$PID" --retry 5
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    start-stop-daemon --status --pidfile "$PID"
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+ esac

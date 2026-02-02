@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+  <div class="card">
+    <h2>Photoframe</h2>
+    <label><input type="checkbox" name="pf_enabled" {% if cfg.photoframe.enabled %}checked{% endif %}> Enabled</label>
+    <label>DLNA mount point <input type="text" name="dlna_mount" value="{{ cfg.paths.dlna_mount }}" /></label>
+    <label>DLNA server dir <input type="text" name="server_dir" value="{{ cfg.photoframe.server_dir }}" /></label>
+    <label>Subpath <input type="text" name="subpath" value="{{ cfg.photoframe.subpath }}" /></label>
+    <label>Image duration (s) <input type="number" name="image_duration" value="{{ cfg.photoframe.image_display_duration }}" /></label>
+    <label>Playlist refresh (s) <input type="number" name="playlist_refresh" value="{{ cfg.photoframe.playlist_refresh_seconds }}" /></label>
+    <label><input type="checkbox" name="shuffle" {% if cfg.photoframe.shuffle %}checked{% endif %}> Shuffle</label>
+    <label><input type="checkbox" name="mute" {% if cfg.photoframe.mute %}checked{% endif %}> Mute</label>
+  </div>
+
+  <div class="card">
+    <h2>MagicMirror</h2>
+    <label><input type="checkbox" name="mm_enabled" {% if cfg.mirror.enabled %}checked{% endif %}> Enabled</label>
+  </div>
+
+  <div class="card">
+    <h2>Todo Providers</h2>
+    <label><input type="checkbox" name="gt_enabled" {% if cfg.todos.google_tasks.enabled %}checked{% endif %}> Google Tasks Enabled</label>
+    <label>Google Tasks credentials file <input type="text" name="gt_credentials" value="{{ cfg.todos.google_tasks.credentials_file }}" /></label>
+    <label>Google Tasks token file <input type="text" name="gt_token" value="{{ cfg.todos.google_tasks.token_file }}" /></label>
+    <label><input type="checkbox" name="mt_enabled" {% if cfg.todos.microsoft_todo.enabled %}checked{% endif %}> Microsoft To Do Enabled</label>
+    <label>Microsoft client ID file <input type="text" name="mt_client_id" value="{{ cfg.todos.microsoft_todo.client_id_file }}" /></label>
+    <label>Microsoft tenant ID file <input type="text" name="mt_tenant_id" value="{{ cfg.todos.microsoft_todo.tenant_id_file }}" /></label>
+    <label>Microsoft refresh token file <input type="text" name="mt_refresh_token" value="{{ cfg.todos.microsoft_todo.refresh_token_file }}" /></label>
+  </div>
+
+  <div class="card">
+    <h2>Calendar Fetch</h2>
+    <label><input type="checkbox" name="cal_enabled" {% if cfg.calendar_fetch.enabled %}checked{% endif %}> Enabled</label>
+    <label>Refresh (minutes) <input type="number" name="cal_refresh" value="{{ cfg.calendar_fetch.refresh_minutes }}" /></label>
+    <label>Calendars YAML</label>
+    <textarea name="calendars_yaml" rows="10">{{ calendars_yaml }}</textarea>
+  </div>
+
+  <div class="card">
+    <h2>Web UI Auth</h2>
+    <label><input type="checkbox" name="auth_enabled" {% if cfg.webui.basic_auth.enabled %}checked{% endif %}> Enabled</label>
+    <label>Username <input type="text" name="auth_user" value="{{ cfg.webui.basic_auth.username }}" /></label>
+    <label>Password <input type="text" name="auth_pass" value="{{ cfg.webui.basic_auth.password }}" /></label>
+  </div>
+
+  <button type="submit">Save</button>
+</form>
+{% endblock %}

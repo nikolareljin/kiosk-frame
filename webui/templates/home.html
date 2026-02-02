@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+  <h2>Overview</h2>
+  <p>Photoframe: {{ 'enabled' if cfg.photoframe.enabled else 'disabled' }}</p>
+  <p>MagicMirror: {{ 'enabled' if cfg.mirror.enabled else 'disabled' }}</p>
+</div>
+<div class="card">
+  <form method="post" action="/action/restart_photoframe">
+    <button type="submit">Restart Photoframe</button>
+  </form>
+  <form method="post" action="/action/restart_mirror">
+    <button type="submit">Restart Mirror</button>
+  </form>
+  <form method="post" action="/action/rescan_dlna">
+    <button type="submit">Rescan DLNA</button>
+  </form>
+  <form method="post" action="/action/fetch_calendars">
+    <button type="submit">Fetch Calendars Now</button>
+  </form>
+</div>
+{% endblock %}

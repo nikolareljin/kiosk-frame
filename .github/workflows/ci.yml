@@ -1,0 +1,21 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python compile
+        run: |
+          python -m py_compile $(rg --files -g '*.py')
+      - name: Shellcheck (if available)
+        run: |
+          if command -v shellcheck >/dev/null 2>&1; then
+            shellcheck $(rg --files -g '*.sh')
+          else
+            echo "shellcheck not available"
+          fi

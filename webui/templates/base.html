@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KioskFrame</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<header>
+  <div>KioskFrame</div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/frame">Frame</a>
+    <a href="/mirror">Mirror</a>
+    <a href="/settings">Settings</a>
+    <a href="/status">Status</a>
+    <a href="/logs">Logs</a>
+  </nav>
+</header>
+<main>
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

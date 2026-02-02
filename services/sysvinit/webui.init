@@ -1,0 +1,34 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          webui
+# Required-Start:    $network
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: KioskFrame web UI
+### END INIT INFO
+
+set -e
+PID=/var/run/webui.pid
+LOG=/var/log/appliance/webui.log
+
+case "$1" in
+  start)
+    mkdir -p /var/log/appliance
+    start-stop-daemon --start --background --make-pidfile --pidfile "$PID" --exec /opt/appliance/venv/bin/python -- /opt/appliance/webui/app.py >>"$LOG" 2>&1
+    ;;
+  stop)
+    start-stop-daemon --stop --pidfile "$PID" --retry 5
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    start-stop-daemon --status --pidfile "$PID"
+    ;;
+  *)
+    echo "usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+ esac

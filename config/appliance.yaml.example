@@ -1,0 +1,61 @@
+webui:
+  host: 0.0.0.0
+  port: 8080
+  basic_auth:
+    enabled: false
+    username: admin
+    password: change_me
+
+paths:
+  dlna_mount: /mnt/dlna
+  playlist: /var/lib/appliance/playlist.m3u
+  calendars_dir: /var/lib/appliance/calendars
+  logs_dir: /var/log/appliance
+
+photoframe:
+  enabled: true
+  server_dir: ""
+  subpath: ""
+  playlist_refresh_seconds: 300
+  image_display_duration: 12
+  shuffle: true
+  mute: true
+
+mirror:
+  enabled: true
+  host: 127.0.0.1
+  port: 8081
+  magicmirror_path: /opt/appliance/magicmirror
+
+calendar_fetch:
+  enabled: true
+  refresh_minutes: 15
+  user_agent: "KioskFrame/1.0"
+
+calendars:
+  - name: "Personal"
+    type: "ics_url"   # google|outlook|ics_url
+    url: ""
+    fetch_via_proxy: true
+    headers_file: ""
+
+todos:
+  google_tasks:
+    enabled: false
+    credentials_file: /etc/appliance/secrets/google_tasks_credentials.json
+    token_file: /etc/appliance/secrets/google_tasks_token.json
+  microsoft_todo:
+    enabled: false
+    client_id_file: /etc/appliance/secrets/microsoft_client_id.txt
+    tenant_id_file: /etc/appliance/secrets/microsoft_tenant_id.txt
+    refresh_token_file: /etc/appliance/secrets/microsoft_refresh_token.txt
+
+kiosk:
+  enabled: true
+  url: "http://localhost:8080/"
+  x_display: ":0"
+  user: "frame"
+  tty: "1"
+
+services:
+  init_system: "auto"   # auto|runit|sysvinit

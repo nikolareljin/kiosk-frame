@@ -1,0 +1,15 @@
+#!/bin/sh
+set -euo pipefail
+
+ENABLED=$(/opt/appliance/venv/bin/python - <<'PY'
+import yaml
+cfg=yaml.safe_load(open('/etc/appliance/appliance.yaml'))
+print('yes' if cfg['calendar_fetch'].get('enabled', True) else 'no')
+PY
+)
+
+if [ "$ENABLED" = "no" ]; then
+  exec sleep 3600
+fi
+
+exec /opt/appliance/venv/bin/python /opt/appliance/calendar_fetch/fetcher.py

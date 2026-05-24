@@ -1,15 +1,18 @@
-name: CI
+name: PR Gate
 
 on:
-  push:
-    branches: [main, master]
+  pull_request:
     paths-ignore:
       - "docs/**"
       - "*.md"
 
+concurrency:
+  group: pr-gate-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  ci:
-    uses: nikolareljin/ci-helpers/.github/workflows/python.yml@production
+  pr-gate:
+    uses: nikolareljin/ci-helpers/.github/workflows/pr-gate.yml@production
     with:
       python_version: "3.11"
       lint_command: "python -m compileall -q . && (command -v shellcheck && shellcheck $(find . -name '*.sh' -not -path './.git/*') || true)"

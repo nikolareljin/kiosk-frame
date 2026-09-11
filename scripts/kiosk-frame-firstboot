@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+config=/etc/appliance/appliance.yaml
+state=/var/lib/appliance/firstboot-complete
+[ -e "$state" ] && exit 0
+command -v dialog >/dev/null 2>&1 || exit 1
+name=$(dialog --stdout --inputbox "Kiosk name" 8 60 "") || exit 1
+install -d -m 0700 /etc/appliance/secrets
+install -d -m 0755 /var/lib/appliance
+install -m 0600 /dev/null "$config"
+printf '%s\n' "# Device-specific calendar and credential values are configured locally." >"$config"
+printf '%s\n' "device_name: ${name}" >>"$config"
+touch "$state"
+chmod 0600 "$state"

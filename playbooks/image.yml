@@ -1,0 +1,44 @@
+---
+- name: KioskFrame image
+  hosts: local
+  become: true
+  vars:
+    kiosk_frame_root: /opt/appliance
+    kiosk_frame_config: /etc/appliance
+  tasks:
+    - name: Install KioskFrame runtime packages
+      ansible.builtin.apt:
+        name: [python3, python3-venv, rsync, dialog]
+        state: present
+        update_cache: true
+    - name: Create KioskFrame system directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner | default('root') }}"
+        group: root
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ kiosk_frame_root }}", mode: "0755" }
+        - { path: "{{ kiosk_frame_config }}", mode: "0755" }
+        - { path: /etc/appliance/secrets, mode: "0700" }
+        - { path: /var/lib/appliance, mode: "0755" }
+    - name: Create kiosk account
+      ansible.builtin.user:
+        name: frame
+        create_home: true
+        shell: /bin/bash
+    - name: Copy KioskFrame application source
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../"
+        dest: "{{ kiosk_frame_root }}/"
+    - name: Install first boot wizard
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../scripts/kiosk-frame-firstboot"
+        dest: /usr/local/sbin/kiosk-frame-firstboot
+        mode: "0755"
+    - name: Enable first boot service
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../systemd/kiosk-frame-firstboot.service"
+        dest: /etc/systemd/system/kiosk-frame-firstboot.service
+        mode: "0644"

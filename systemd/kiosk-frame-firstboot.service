@@ -1,0 +1,14 @@
+[Unit]
+Description=KioskFrame first boot setup
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/kiosk-frame-firstboot
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

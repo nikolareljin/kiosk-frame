@@ -5,12 +5,35 @@
   vars:
     kiosk_frame_root: /opt/appliance
     kiosk_frame_config: /etc/appliance
+    kiosk_frame_runtime_packages:
+      - python3
+      - python3-venv
+      - rsync
+      - dialog
+      - git
+      - djmount
+      - mpv
+      - ffmpeg
+      - fuse
+      - chromium
+      - xinit
+      - xorg
+      - nodejs
+      - npm
+    kiosk_frame_services:
+      - djmount
+      - photoframe
+      - magicmirror
+      - calendar_fetch
+      - webui
+      - kiosk
   tasks:
     - name: Install KioskFrame runtime packages
       ansible.builtin.apt:
-        name: [python3, python3-venv, rsync, dialog]
+        name: "{{ kiosk_frame_runtime_packages }}"
         state: present
         update_cache: true
+
     - name: Create KioskFrame system directories
       ansible.builtin.file:
         path: "{{ item.path }}"
@@ -23,27 +46,83 @@
         - { path: "{{ kiosk_frame_config }}", mode: "0755" }
         - { path: /etc/appliance/secrets, mode: "0700" }
         - { path: /var/lib/appliance, mode: "0755" }
+        - { path: /var/lib/appliance/calendars, mode: "0755" }
+        - { path: /var/log/appliance, mode: "0755" }
+
     - name: Create kiosk account
       ansible.builtin.user:
         name: frame
         create_home: true
         shell: /bin/bash
+
     - name: Copy KioskFrame application source
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../"
         dest: "{{ kiosk_frame_root }}/"
+
+    - name: Create the KioskFrame Python environment
+      ansible.builtin.command:
+        cmd: "python3 -m venv {{ kiosk_frame_root }}/venv"
+        creates: "{{ kiosk_frame_root }}/venv/bin/python"
+
+    - name: Install KioskFrame Python requirements
+      ansible.builtin.command:
+        cmd: "{{ kiosk_frame_root }}/venv/bin/pip install --no-cache-dir -r {{ kiosk_frame_root }}/requirements.txt"
+      changed_when: false
+
+    - name: Initialize complete appliance configuration
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/config/appliance.yaml.example"
+        dest: "{{ kiosk_frame_config }}/appliance.yaml"
+        remote_src: true
+        force: false
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Install MagicMirror runtime
+      ansible.builtin.command:
+        cmd: "bash {{ kiosk_frame_root }}/mirror/install_magicmirror.sh {{ kiosk_frame_root }}/magicmirror"
+        creates: "{{ kiosk_frame_root }}/magicmirror/package.json"
+
+    - name: Render the initial MagicMirror configuration
+      ansible.builtin.command:
+        cmd: "{{ kiosk_frame_root }}/venv/bin/python {{ kiosk_frame_root }}/mirror/render_config.py"
+      changed_when: false
+
+    - name: Install KioskFrame runit services
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/services/runit/{{ item }}/"
+        dest: "/etc/sv/{{ item }}/"
+        remote_src: true
+        mode: preserve
+      loop: "{{ kiosk_frame_services }}"
+
+    - name: Enable KioskFrame runit services
+      ansible.builtin.file:
+        src: "/etc/sv/{{ item }}"
+        dest: "/etc/service/{{ item }}"
+        state: link
+        force: true
+      loop: "{{ kiosk_frame_services }}"
+
     - name: Install first boot wizard
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../scripts/kiosk-frame-firstboot"
+        src: "{{ kiosk_frame_root }}/scripts/kiosk-frame-firstboot"
         dest: /usr/local/sbin/kiosk-frame-firstboot
+        remote_src: true
         mode: "0755"
+
     - name: Install first boot runit service
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../runit/kiosk-frame-firstboot/"
+        src: "{{ kiosk_frame_root }}/runit/kiosk-frame-firstboot/"
         dest: /etc/sv/kiosk-frame-firstboot/
+        remote_src: true
         mode: preserve
+
     - name: Enable first boot runit service
       ansible.builtin.file:
         src: /etc/sv/kiosk-frame-firstboot
         dest: /etc/service/kiosk-frame-firstboot
         state: link
+        force: true

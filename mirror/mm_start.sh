@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
 MM_PATH=${1:-/opt/appliance/magicmirror}

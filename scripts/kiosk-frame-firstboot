@@ -1,14 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 config=/etc/appliance/appliance.yaml
+example=/opt/appliance/config/appliance.yaml.example
 state=/var/lib/appliance/firstboot-complete
 [ -e "$state" ] && exit 0
 command -v dialog >/dev/null 2>&1 || exit 1
-name=$(dialog --stdout --inputbox "Kiosk name" 8 60 "") || exit 1
+[ -x /opt/appliance/venv/bin/python ] || exit 1
+
 install -d -m 0700 /etc/appliance/secrets
 install -d -m 0755 /var/lib/appliance
-install -m 0600 /dev/null "$config"
-printf '%s\n' "# Device-specific calendar and credential values are configured locally." >"$config"
-printf '%s\n' "device_name: ${name}" >>"$config"
+if [ ! -f "$config" ]; then
+  install -m 0600 "$example" "$config"
+fi
+
+name=$(dialog --stdout --inputbox "Kiosk name" 8 60 "") || exit 1
+/opt/appliance/venv/bin/python - "$config" "$name" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+import yaml
+
+path = Path(sys.argv[1])
+data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+data["device_name"] = sys.argv[2]
+temporary = path.with_suffix(".yaml.new")
+temporary.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+os.chmod(temporary, 0o600)
+os.replace(temporary, path)
+PY
+
 touch "$state"
 chmod 0600 "$state"

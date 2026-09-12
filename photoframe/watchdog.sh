@@ -1,7 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG=/etc/appliance/appliance.yaml
 LOG=/var/log/appliance/photoframe-watchdog.log
 
 log() {

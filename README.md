@@ -10,7 +10,7 @@ KioskFrame turns a 32-bit antiX (i386) laptop into a single-purpose appliance:
 - Single Chromium kiosk shell that can switch between Frame and Mirror views.
 
 ## Recommended OS
-- antiX 23 (full or base). A minimal install is ideal for Atom-class CPUs.
+- antiX 26 32-bit Core. It is the tested image base and is suitable for Atom-class CPUs.
 
 ## Install
 ```sh

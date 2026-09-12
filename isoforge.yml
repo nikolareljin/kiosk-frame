@@ -4,6 +4,9 @@ integration:
 base:
   catalog_id: antiX_26_i386_core
   sha256: 2e48b34a180add989ddf93ed3d8928f932a6cdf3fd8e612c8ce673e6c867295e
+compatibility:
+  base_filename_patterns:
+    - '^antiX-26_386-core.iso$'
 output:
   name: kiosk-frame-antix-26-i386
   label: KioskFrame antiX 26

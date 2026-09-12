@@ -37,8 +37,13 @@
         src: "{{ playbook_dir }}/../scripts/kiosk-frame-firstboot"
         dest: /usr/local/sbin/kiosk-frame-firstboot
         mode: "0755"
-    - name: Enable first boot service
+    - name: Install first boot runit service
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../systemd/kiosk-frame-firstboot.service"
-        dest: /etc/systemd/system/kiosk-frame-firstboot.service
-        mode: "0644"
+        src: "{{ playbook_dir }}/../runit/kiosk-frame-firstboot/"
+        dest: /etc/sv/kiosk-frame-firstboot/
+        mode: preserve
+    - name: Enable first boot runit service
+      ansible.builtin.file:
+        src: /etc/sv/kiosk-frame-firstboot
+        dest: /etc/service/kiosk-frame-firstboot
+        state: link

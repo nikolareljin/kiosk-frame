@@ -16,7 +16,7 @@
 ## MagicMirror node issues
 - Ensure Node.js and npm are installed.
 - Check MagicMirror install in `/opt/appliance/magicmirror`.
-- Try an older MagicMirror release if 32-bit Node builds are limited.
+- The installer automatically uses MagicMirror v2.25.0 with Node.js 18–23; Node.js 24+ uses the current release.
 
 ## Calendar fetch errors
 - Check `/var/log/appliance/calendar_fetch.log` for HTTP errors.

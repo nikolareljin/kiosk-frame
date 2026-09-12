@@ -54,6 +54,22 @@
         create_home: true
         shell: /bin/bash
 
+    # useradd only takes ownership of a home directory it creates itself; if
+    # one is already there it warns and leaves it alone. IsoForge runs this
+    # playbook with HOME set to the manifest's skel_home, which is /home/frame
+    # here, and ansible creates a missing HOME for its own temp directory
+    # before any task runs. So /home/frame already exists, owned by root, by
+    # the time the account is made -- and the kiosk starts X with
+    # `su frame -c startx`, which cannot write .Xauthority into a home it does
+    # not own. The image builds, boots, and shows nothing.
+    - name: Give the kiosk account its own home directory
+      ansible.builtin.file:
+        path: /home/frame
+        state: directory
+        owner: frame
+        group: frame
+        mode: "0755"
+
     - name: Copy KioskFrame application source
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../"

@@ -5,8 +5,25 @@ config=/etc/appliance/appliance.yaml
 example=/opt/appliance/config/appliance.yaml.example
 state=/var/lib/appliance/firstboot-complete
 [ -e "$state" ] && exit 0
-command -v dialog >/dev/null 2>&1 || exit 1
-[ -x /opt/appliance/venv/bin/python ] || exit 1
+
+# Every one of these used to be a bare `exit 1`. runit restarts the service the
+# moment it dies, so an image missing dialog or the virtualenv respawned the
+# wizard about once a second, forever, printing nothing: the operator sees a
+# blank tty1 and has no way to find out why. Say what is wrong on the console
+# the wizard owns, and wait long enough that the message can be read.
+unusable() {
+  printf '\nKioskFrame first boot cannot run:\n  %s\n\n' "$1" >&2
+  printf 'This is a fault in the image, not a setting. Nothing has been changed.\n' >&2
+  sleep 60
+  exit 1
+}
+
+command -v dialog >/dev/null 2>&1 \
+  || unusable "dialog is not installed"
+[ -x /opt/appliance/venv/bin/python ] \
+  || unusable "the application environment is missing at /opt/appliance/venv"
+[ -f "$config" ] || [ -f "$example" ] \
+  || unusable "no configuration and no template at $example"
 
 install -d -m 0700 /etc/appliance/secrets
 install -d -m 0755 /var/lib/appliance
@@ -14,7 +31,18 @@ if [ ! -f "$config" ]; then
   install -m 0600 "$example" "$config"
 fi
 
-name=$(dialog --stdout --inputbox "Kiosk name" 8 60 "") || exit 1
+# Asking again rather than exiting. A cancelled or empty answer is the operator
+# still deciding, not a broken image, and exiting here handed the same tight
+# respawn loop to the one case where a person is sitting in front of the
+# screen.
+name=""
+while [ -z "$name" ]; do
+  name=$(dialog --stdout --inputbox "Kiosk name" 8 60 "") || name=""
+  if [ -z "$name" ]; then
+    dialog --msgbox "This device needs a name before it can finish starting." 7 60
+  fi
+done
+
 /opt/appliance/venv/bin/python - "$config" "$name" <<'PY'
 import os
 import sys
@@ -26,8 +54,12 @@ path = Path(sys.argv[1])
 data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 data["device_name"] = sys.argv[2]
 temporary = path.with_suffix(".yaml.new")
-temporary.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
-os.chmod(temporary, 0o600)
+# Opened 0600 rather than chmod'ed afterwards: write_text creates the file
+# under the process umask first, so the configuration existed world-readable
+# for the length of the write.
+fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+with os.fdopen(fd, "w", encoding="utf-8") as handle:
+    yaml.safe_dump(data, handle, sort_keys=False)
 os.replace(temporary, path)
 PY
 

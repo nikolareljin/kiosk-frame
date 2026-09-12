@@ -1,4 +1,8 @@
 # KioskFrame
+<p align="center">
+  <img src="assets/kiosk-frame-hero.svg" alt="KioskFrame display appliance logo" width="800">
+</p>
+
 
 KioskFrame turns a 32-bit antiX (i386) laptop into a single-purpose appliance:
 - DLNA-backed photo/video frame (shuffle slideshow) via local DLNA mount.

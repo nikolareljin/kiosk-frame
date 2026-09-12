@@ -28,7 +28,7 @@ http://<host>:8080/
 ```
 
 ## Finding Your DLNA Server Dir
-After `djmount` is running, browse `/mnt/dlna` to see server directories. The name you see is `photoframe.server_dir`.
+When `djmount` is available and running, browse `/mnt/dlna` to see server directories. The name you see is `photoframe.server_dir`.
 
 ## Calendar Sources
 - **Google Calendar**: use the public or private ICS URL (private has full details; treat as sensitive).

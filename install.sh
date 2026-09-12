@@ -78,10 +78,15 @@ install_core() {
 }
 
 install_photoframe() {
-  print_info "Installing photoframe (djmount + mpv)..."
-  apt-get install -y djmount mpv ffmpeg fuse >/dev/null 2>&1
+  print_info "Installing photoframe (mpv; DLNA mount when available)..."
+  apt-get install -y mpv ffmpeg fuse >/dev/null 2>&1
   chmod +x "$APP_DIR"/photoframe/*.py "$APP_DIR"/photoframe/*.sh
-  _register_service djmount
+  if apt-cache show djmount >/dev/null 2>&1; then
+    apt-get install -y djmount >/dev/null 2>&1
+    _register_service djmount
+  else
+    print_warning "djmount is unavailable in this repository; DLNA mounting is not enabled."
+  fi
   _register_service photoframe
 }
 
@@ -168,7 +173,7 @@ run_dialog_installer() {
     --title "KioskFrame Installer" \
     --checklist "Select components to install:" \
     "$DIALOG_HEIGHT" "$DIALOG_WIDTH" 10 \
-    "photoframe"  "Photo slideshow via DLNA (installs djmount, mpv)"  "on"  \
+    "photoframe"  "Photo slideshow via DLNA (mpv; mount package when available)"  "on"  \
     "mirror"      "MagicMirror dashboard (installs Node.js)"          "off" \
     "calendar"    "Calendar fetch service"                            "on"  \
     "webui"       "Web UI on port 8080"                               "on"  \
@@ -216,5 +221,5 @@ Web UI:  http://<host>:8080/
 Config:  $CONFIG_DIR/appliance.yaml
 Logs:    $LOG_DIR
 
-djmount mounts DLNA servers at paths.dlna_mount in appliance.yaml (/mnt/dlna by default).
+When installed, djmount mounts DLNA servers at paths.dlna_mount in appliance.yaml (/mnt/dlna by default).
 EON

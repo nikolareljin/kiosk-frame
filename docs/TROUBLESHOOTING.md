@@ -1,7 +1,7 @@
 # Troubleshooting
 
-## djmount issues
-- Ensure `djmount` is installed and the DLNA server is reachable.
+## Optional djmount issues
+- If your package repository provides `djmount`, install it and ensure the DLNA server is reachable. Without it, use local media paths.
 - Check `/var/log/appliance/photoframe.log` and the service status page.
 
 ## mpv not starting

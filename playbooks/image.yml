@@ -11,7 +11,6 @@
       - rsync
       - dialog
       - git
-      - djmount
       - mpv
       - ffmpeg
       - fuse
@@ -21,7 +20,7 @@
       - nodejs
       - npm
     kiosk_frame_services:
-      - djmount
+      # djmount is appended only when the active package repositories provide it.
       - photoframe
       - magicmirror
       - calendar_fetch
@@ -80,6 +79,24 @@
         group: root
         mode: "0600"
 
+    - name: Check whether the optional DLNA mount package is available
+      ansible.builtin.command:
+        cmd: apt-cache show djmount
+      register: kiosk_frame_djmount
+      changed_when: false
+      failed_when: false
+
+    - name: Install the optional DLNA mount package
+      ansible.builtin.apt:
+        name: djmount
+        state: present
+      when: kiosk_frame_djmount.rc == 0
+
+    - name: Explain when the DLNA mount package is unavailable
+      ansible.builtin.debug:
+        msg: "djmount is unavailable in this base image repository; DLNA mounting is not enabled."
+      when: kiosk_frame_djmount.rc != 0
+
     - name: Install MagicMirror runtime
       ansible.builtin.command:
         cmd: "bash {{ kiosk_frame_root }}/mirror/install_magicmirror.sh {{ kiosk_frame_root }}/magicmirror"
@@ -96,7 +113,7 @@
         dest: "/etc/sv/{{ item }}/"
         remote_src: true
         mode: preserve
-      loop: "{{ kiosk_frame_services }}"
+      loop: "{{ kiosk_frame_services + (['djmount'] if kiosk_frame_djmount.rc == 0 else []) }}"
 
     - name: Enable KioskFrame runit services
       ansible.builtin.file:
@@ -104,7 +121,7 @@
         dest: "/etc/service/{{ item }}"
         state: link
         force: true
-      loop: "{{ kiosk_frame_services }}"
+      loop: "{{ kiosk_frame_services + (['djmount'] if kiosk_frame_djmount.rc == 0 else []) }}"
 
     - name: Install first boot wizard
       ansible.builtin.copy:

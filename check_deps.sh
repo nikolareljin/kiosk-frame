@@ -10,7 +10,9 @@ check() {
 }
 
 check mpv
-check djmount
+if ! command -v djmount >/dev/null 2>&1; then
+  echo "Optional: djmount is unavailable; DLNA mounting is disabled." >&2
+fi
 check startx
 check xset
 if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/null 2>&1; then

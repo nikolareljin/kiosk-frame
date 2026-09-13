@@ -3,3 +3,8 @@
 # Ignore Claude memory files outside the repo root
 CLAUDE.md
 !/CLAUDE.md
+
+# python -m compileall is what both workflows run as the Python half of the
+# lint, so running the gate locally leaves these behind in four directories.
+__pycache__/
+*.py[cod]

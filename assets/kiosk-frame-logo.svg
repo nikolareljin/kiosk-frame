@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">KioskFrame</title>
+  <desc id="desc">A desktop display containing a mountain, sun, and dashboard accents.</desc>
+  <rect width="512" height="512" rx="96" fill="#292e31"/>
+  <rect x="68" y="92" width="376" height="270" rx="30" fill="#1b2023" stroke="#f8fafc" stroke-width="18"/>
+  <path d="M68 149h376" stroke="#f8fafc" stroke-width="18"/>
+  <path d="M68 149h154" stroke="#21c4cb" stroke-width="18"/>
+  <path d="M143 295l49-89 42 61 31-40 69 102H143z" fill="none" stroke="#2786df" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="190" r="18" fill="#f5b642"/>
+  <path d="M312 219h73M312 252h54M312 286h73" stroke="#f8fafc" stroke-width="12" stroke-linecap="round"/>
+  <path d="M312 252h54" stroke="#21c4cb" stroke-width="12" stroke-linecap="round"/>
+  <path d="M210 362v31M302 362v31M173 397h166" stroke="#f8fafc" stroke-width="18" stroke-linecap="round"/>
+</svg>

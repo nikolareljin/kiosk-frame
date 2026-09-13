@@ -1,4 +1,8 @@
 # KioskFrame
+<p align="center">
+  <img src="assets/kiosk-frame-hero.svg" alt="KioskFrame display appliance logo" width="800">
+</p>
+
 
 KioskFrame turns a 32-bit antiX (i386) laptop into a single-purpose appliance:
 - DLNA-backed photo/video frame (shuffle slideshow) via local DLNA mount.
@@ -6,7 +10,7 @@ KioskFrame turns a 32-bit antiX (i386) laptop into a single-purpose appliance:
 - Single Chromium kiosk shell that can switch between Frame and Mirror views.
 
 ## Recommended OS
-- antiX 23 (full or base). A minimal install is ideal for Atom-class CPUs.
+- antiX 26 32-bit Core. It is the tested image base and is suitable for Atom-class CPUs.
 
 ## Install
 ```sh
@@ -24,7 +28,7 @@ http://<host>:8080/
 ```
 
 ## Finding Your DLNA Server Dir
-After `djmount` is running, browse `/mnt/dlna` to see server directories. The name you see is `photoframe.server_dir`.
+When `djmount` is available and running, browse `/mnt/dlna` to see server directories. The name you see is `photoframe.server_dir`.
 
 ## Calendar Sources
 - **Google Calendar**: use the public or private ICS URL (private has full details; treat as sensitive).

@@ -1,0 +1,161 @@
+---
+- name: KioskFrame image
+  hosts: local
+  become: true
+  vars:
+    kiosk_frame_root: /opt/appliance
+    kiosk_frame_config: /etc/appliance
+    kiosk_frame_runtime_packages:
+      - python3
+      - python3-venv
+      - rsync
+      - dialog
+      - git
+      - mpv
+      - ffmpeg
+      - fuse
+      - chromium
+      - xinit
+      - xorg
+      - nodejs
+      - npm
+    kiosk_frame_services:
+      # djmount is appended only when the active package repositories provide it.
+      - photoframe
+      - magicmirror
+      - calendar_fetch
+      - webui
+      - kiosk
+  tasks:
+    - name: Install KioskFrame runtime packages
+      ansible.builtin.apt:
+        name: "{{ kiosk_frame_runtime_packages }}"
+        state: present
+        update_cache: true
+
+    - name: Create KioskFrame system directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner | default('root') }}"
+        group: root
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "{{ kiosk_frame_root }}", mode: "0755" }
+        - { path: "{{ kiosk_frame_config }}", mode: "0755" }
+        - { path: /etc/appliance/secrets, mode: "0700" }
+        - { path: /var/lib/appliance, mode: "0755" }
+        - { path: /var/lib/appliance/calendars, mode: "0755" }
+        - { path: /var/log/appliance, mode: "0755" }
+
+    - name: Create kiosk account
+      ansible.builtin.user:
+        name: frame
+        create_home: true
+        shell: /bin/bash
+
+    # useradd only takes ownership of a home directory it creates itself; if
+    # one is already there it warns and leaves it alone. IsoForge runs this
+    # playbook with HOME set to the manifest's skel_home, which is /home/frame
+    # here, and ansible creates a missing HOME for its own temp directory
+    # before any task runs. So /home/frame already exists, owned by root, by
+    # the time the account is made -- and the kiosk starts X with
+    # `su frame -c startx`, which cannot write .Xauthority into a home it does
+    # not own. The image builds, boots, and shows nothing.
+    - name: Give the kiosk account its own home directory
+      ansible.builtin.file:
+        path: /home/frame
+        state: directory
+        owner: frame
+        group: frame
+        mode: "0755"
+
+    - name: Copy KioskFrame application source
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../"
+        dest: "{{ kiosk_frame_root }}/"
+
+    - name: Create the KioskFrame Python environment
+      ansible.builtin.command:
+        cmd: "python3 -m venv {{ kiosk_frame_root }}/venv"
+        creates: "{{ kiosk_frame_root }}/venv/bin/python"
+
+    - name: Install KioskFrame Python requirements
+      ansible.builtin.command:
+        cmd: "{{ kiosk_frame_root }}/venv/bin/pip install --no-cache-dir -r {{ kiosk_frame_root }}/requirements.txt"
+      changed_when: false
+
+    - name: Initialize complete appliance configuration
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/config/appliance.yaml.example"
+        dest: "{{ kiosk_frame_config }}/appliance.yaml"
+        remote_src: true
+        force: false
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Check whether the optional DLNA mount package is available
+      ansible.builtin.command:
+        cmd: apt-cache show djmount
+      register: kiosk_frame_djmount
+      changed_when: false
+      failed_when: false
+
+    - name: Install the optional DLNA mount package
+      ansible.builtin.apt:
+        name: djmount
+        state: present
+      when: kiosk_frame_djmount.rc == 0
+
+    - name: Explain when the DLNA mount package is unavailable
+      ansible.builtin.debug:
+        msg: "djmount is unavailable in this base image repository; DLNA mounting is not enabled."
+      when: kiosk_frame_djmount.rc != 0
+
+    - name: Install MagicMirror runtime
+      ansible.builtin.command:
+        cmd: "bash {{ kiosk_frame_root }}/mirror/install_magicmirror.sh {{ kiosk_frame_root }}/magicmirror"
+        creates: "{{ kiosk_frame_root }}/magicmirror/package.json"
+
+    - name: Render the initial MagicMirror configuration
+      ansible.builtin.command:
+        cmd: "{{ kiosk_frame_root }}/venv/bin/python {{ kiosk_frame_root }}/mirror/render_config.py"
+      changed_when: false
+
+    - name: Install KioskFrame runit services
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/services/runit/{{ item }}/"
+        dest: "/etc/sv/{{ item }}/"
+        remote_src: true
+        mode: preserve
+      loop: "{{ kiosk_frame_services + (['djmount'] if kiosk_frame_djmount.rc == 0 else []) }}"
+
+    - name: Enable KioskFrame runit services
+      ansible.builtin.file:
+        src: "/etc/sv/{{ item }}"
+        dest: "/etc/service/{{ item }}"
+        state: link
+        force: true
+      loop: "{{ kiosk_frame_services + (['djmount'] if kiosk_frame_djmount.rc == 0 else []) }}"
+
+    - name: Install first boot wizard
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/scripts/kiosk-frame-firstboot"
+        dest: /usr/local/sbin/kiosk-frame-firstboot
+        remote_src: true
+        mode: "0755"
+
+    - name: Install first boot runit service
+      ansible.builtin.copy:
+        src: "{{ kiosk_frame_root }}/runit/kiosk-frame-firstboot/"
+        dest: /etc/sv/kiosk-frame-firstboot/
+        remote_src: true
+        mode: preserve
+
+    - name: Enable first boot runit service
+      ansible.builtin.file:
+        src: /etc/sv/kiosk-frame-firstboot
+        dest: /etc/service/kiosk-frame-firstboot
+        state: link
+        force: true
